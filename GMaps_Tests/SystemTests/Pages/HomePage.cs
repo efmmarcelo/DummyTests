@@ -1,44 +1,48 @@
-﻿using NUnit.Framework;
-using OpenQA.Selenium;
+﻿using OpenQA.Selenium;
+using SystemTests.Lib;
 
 namespace SystemTests.Pages
 {
     class HomePage
     {
-        private IWebDriver driver;
+        private IWebDriver _driver;
         public HomePage(IWebDriver driver)
         {
-            this.driver = driver;
+            this._driver = driver;
         }
 
-        public void goToGoogleMaps()
+        IWebElement acceptCookiesBtn => _driver.FindElement(By.XPath("//button[@jsname='higCR']"));
+        IWebElement searchLocationInput => _driver.FindElement(By.Id("searchboxinput"));
+        IWebElement searchLocationBtn => _driver.FindElement(By.Id("searchbox-searchbutton"));
+        IWebElement directionsBtn => _driver.FindElement(By.XPath("//button[contains(@jsaction,'placeActions.directions')]"));
+
+        public void acceptCookies()
         {
-            driver.Navigate().GoToUrl("https://www.google.com/maps");
-            driver.FindElement(By.XPath("//button[@jsname='higCR']")).Click();
+            if (acceptCookiesBtn.Displayed) 
+            {
+                acceptCookiesBtn.Click();
+            }
         }
 
-        public void searchLocation(string location)
+        public IWebElement searchLocation(string location)
         {
-            IWebElement searchLocationInput = driver.FindElement(By.Id("searchboxinput"));
             searchLocationInput.SendKeys(location);
 
-            driver.FindElement(By.Id("searchbox-searchbutton")).Click();
+            searchLocationBtn.Click();
 
-            //Sometimes element not yet visble(only present in DOM), so we need to ensure visibility wit wait driver
-            IWebElement searchResultTitle = Driver.WaitUntilVisible(By.XPath($"//h1[contains(@class,'header')][//*[text()='{location}']]"), driver);
+            //Sometimes element not yet visble(only present in DOM), so we need to ensure visibility with wait driver
+            IWebElement searchResultTitle = Driver.WaitUntilVisible(By.XPath($"//h1[contains(@class,'header')][//*[text()='{location}']]"), _driver);
 
-            Assert.That(searchResultTitle.Displayed, $"Cannot validate that Left panel has {location} element text visible!");
-            StringAssert.Contains("headline", searchResultTitle.GetAttribute("class"), $"Cannot validate that Left panel has {location} as headline text!");
+            return searchResultTitle;
         }
 
-        public void validateDirections(string location)
+        public bool locationVisible(string location)
         {
-            IWebElement directionsBtn = driver.FindElement(By.XPath("//button[contains(@jsaction,'placeActions.directions')]"));
-            Assert.That(directionsBtn.Enabled, "Cannot validate that directions button is clickable!");
             directionsBtn.Click();
 
-            IWebElement destinationField1 = driver.FindElement(By.XPath($"//*[@id='directions-searchbox-1']//input[contains(@aria-label,'{location}')]"));
-            Assert.That(destinationField1.Displayed, $"Cannot validate that direction '{location}' is on destination field! ");
+            IWebElement destinationField1 = Driver.WaitUntilVisible(By.XPath($"//*[@id='directions-searchbox-1']//input[contains(@aria-label,'{location}')]"), _driver);
+
+            return destinationField1.Displayed;
         }
     }
 }

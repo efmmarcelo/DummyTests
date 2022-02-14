@@ -4,11 +4,11 @@ using System;
 using OpenQA.Selenium.Firefox;
 using OpenQA.Selenium.Support.UI;
 
-namespace SystemTests
+namespace SystemTests.Lib
 {
     public class Driver
     {
-        public static IWebDriver _driver;
+        private static IWebDriver _driver;
 
         public static IWebDriver OpenDriver(string browserName)
         {
